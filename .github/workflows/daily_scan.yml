@@ -1,36 +1,36 @@
-name: Daily Dissertation Paper Watchdog
+# name: Daily Dissertation Paper Watchdog
 
-on:
-  workflow_dispatch:
+# on:
+#   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install openai 
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install openai 
 
-      - name: Run script
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }} # 🚨 換成 LINE Token
-          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}                         # 🚨 換成你的 LINE ID
-        run: python fetch_papers.py
+#       - name: Run script
+#         env:
+#           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+#           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }} # 🚨 換成 LINE Token
+#           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}                         # 🚨 換成你的 LINE ID
+#         run: python fetch_papers.py
 
-      - name: Commit and Push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add briefings/*.md processed_papers.log
-          git commit -m "Update briefings and paper history log" || exit 0
-          git push
+#       - name: Commit and Push changes
+#         run: |
+#           git config --local user.email "action@github.com"
+#           git config --local user.name "GitHub Action"
+#           git add briefings/*.md processed_papers.log
+#           git commit -m "Update briefings and paper history log" || exit 0
+#           git push
