@@ -10,6 +10,9 @@ from openai import OpenAI
 # 1. 配置區域 (Configuration)
 # ==========================================
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+LINE_USER_ID = os.getenv("LINE_USER_ID") # 這是你的個人 USER ID 或群組 ID
+
 
 if OPENROUTER_API_KEY:
     # OpenRouter 的標準相容端點
@@ -145,6 +148,38 @@ def send_to_slack(text):
     try: urllib.request.urlopen(req)
     except Exception as e: print(f"Slack Error: {e}")
 
+def send_to_line(text):
+    if not LINE_CHANNEL_ACCESS_TOKEN or not LINE_USER_ID:
+        print("Warning: LINE configuration missing.")
+        return
+        
+    url = "https://api.line.me/v2/bot/message/push"
+    
+    # 🚨 LINE 訊息限制單則最大 5000 字，這裡取 3000 字非常安全
+    # 注意：LINE 不支援 Slack 的 Markdown 語法（如 *粗體*），它會直接顯示符號
+    payload = {
+        "to": LINE_USER_ID,
+        "messages": [
+            {
+                "type": "text",
+                "text": f"🧬 Eric's Multi-Omics Update ({datetime.now().strftime('%Y-%m-%d')})\n\n{text[:3000]}"
+            }
+        ]
+    }
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"
+    }
+    
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            print("[✓] 已成功發送更新至 LINE！")
+    except Exception as e:
+        print(f"LINE Error: {e}")
+
+
 def main():
     date_str = datetime.now().strftime('%Y-%m-%d')
     os.makedirs("briefings", exist_ok=True)
@@ -185,8 +220,13 @@ def main():
     print(f"==========================================")
     with open(filename, 'w', encoding='utf-8') as f: f.write(report_content)
     if any_new: 
-        send_to_slack(slack_summary)
-        print("[✓] 已發送更新至 Slack。")
+        # 🚨 記得把原本的 send_to_slack 改成 send_to_line
+        send_to_line(slack_summary)
+
+    # with open(filename, 'w', encoding='utf-8') as f: f.write(report_content)
+    # if any_new: 
+    #     send_to_slack(slack_summary)
+    #     print("[✓] 已發送更新至 Slack。")
     else:
         print("[!] 本次無新論文，未發送 Slack。")
 
